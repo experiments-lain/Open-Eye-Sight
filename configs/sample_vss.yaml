@@ -1,0 +1,8 @@
+yolo_ckpt_path: "models/yolo8x.pt"
+clip_ckpt_path: "models/ViT-L-14.pt"
+
+image_size: [ 640, 640 ]
+sampling_rate: 24
+saving_directory: results/
+caption: "Man looking on the cat"
+debug: False
