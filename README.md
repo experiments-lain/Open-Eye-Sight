@@ -8,7 +8,7 @@
 
 ## Open-Eye-Sight: Multi-Camera and Video Perception
 
-**Open-Eye-Sight** is an initiative dedicated to **efficiently** run search entities and events on the video by textual description/image. 
+**Open-Eye-Sight** is an initiative dedicated to **efficiently** run entities and events search on the video by textual description/image. 
 Open-Eye-Sight aims to provide open-source solution for multi-camera semantic and image search problem and try out the capabilities of 
 modern vision models. My method is capable of finding the objects and events over custom time interval on the video/multi-camera stream by using textual description or target image.
 
