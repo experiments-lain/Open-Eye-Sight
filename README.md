@@ -8,7 +8,7 @@
 
 ## Open-Eye-Sight: Multi-Camera and Video Perception
 
-I design and implement **Open-Eye-Sight**, an initiative dedicated to **efficiently** run search entities and events on the video by textual description/image. 
+**Open-Eye-Sight** is an initiative dedicated to **efficiently** run search entities and events on the video by textual description/image. 
 Open-Eye-Sight aims to provide open-source solution for multi-camera semantic and image search problem and try out the capabilities of 
 modern vision models. My method is capable of finding the objects and events over custom time interval on the video/multi-camera stream by using textual description or target image.
 
@@ -19,15 +19,6 @@ modern vision models. My method is capable of finding the objects and events ove
 
 ## 🎥 Demo
 
-<style>
-  .fast-gif {
-    width: 640px;
-    height: 360px;
-    animation-duration: 0.5s;
-    animation-timing-function: steps(8, end);
-    animation-iteration-count: infinite;
-  }
-</style>
 
 <p align="center">
   <img src="assets/readme/demo.gif" alt="Demo GIF" class="fast-gif">
@@ -39,12 +30,16 @@ modern vision models. My method is capable of finding the objects and events ove
 
 ### TODO list sorted by priority
 
+- [x] Image search based on DINOv2 visual embeddings extraction
+
+- [x] Semantic image&text search based on CLIP visual&text embeddings extraction
+
 <details>
 <summary>View more</summary>
 
-- [x] Asynchronized processing pipeline from multiple EarthCam Videos/Streams
+- [] Asynchronized processing pipeline from multiple EarthCam Videos/Streams.
 
-- [x] Connect non-relational database to BucketManagerV2
+- [] Connect the database to BucketManagerV2.
 
 </details>
 
