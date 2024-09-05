@@ -15,7 +15,7 @@ modern vision models. My method is capable of finding the objects and events ove
 ## 📰 News
 
 - **[2024.09.04]** The first implementation released.
-  [[Technical Report]]()
+  [[Technical Report]](docs/report_01.md)
 
 ## 🎥 Demo
 
