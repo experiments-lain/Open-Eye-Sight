@@ -26,13 +26,12 @@ modern vision models. My method is capable of finding the objects and events ove
 
 ## 🔆 New Features/Updates
 
-
-
-### TODO list sorted by priority
-
 - [x] Image search based on DINOv2 visual embeddings extraction
 
 - [x] Semantic image&text search based on CLIP visual&text embeddings extraction
+
+
+### TODO list sorted by priority
 
 <details>
 <summary>View more</summary>
