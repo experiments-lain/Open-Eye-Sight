@@ -28,17 +28,18 @@ modern vision models. My method is capable of finding the objects and events ove
 
 - [x] Image search based on DINOv2 visual embeddings extraction
 
-- [x] Semantic image&text search based on CLIP visual&text embeddings extraction
+- [x] Semantic search based on CLIP visual&text embeddings extraction, the text and image queries are available
 
+- [x] Pluggable image encoding model system that allows to easily connect other image encoding models for this task.
 
 ### TODO list sorted by priority
 
 <details>
 <summary>View more</summary>
 
-- [] Asynchronized processing pipeline from multiple EarthCam Videos/Streams.
+- [ ] Asynchronized data loading from multiple sources (EarthCam Videos/Streams).
 
-- [] Connect the database to BucketManagerV2.
+- [ ] Change the architecture of the BucketManagerV2 to connect the MongoDB, and suddenly connect the MongoDB
 
 </details>
 
@@ -52,10 +53,8 @@ modern vision models. My method is capable of finding the objects and events ove
 Other useful documents and links are listed below.
 
 - Technical Reports:
-  - [report 1.0](docs/report_01.md): architecture, data, etc.
-- Repo structure: [structure.md](TODO)
-- Config file explanation: [config.md](TODO)
-- Evaluation: [eval/README.md](TODO)
+  - [report 1.0](docs/report_01.md): architecture, implementation details, etc.
+- Repo structure: [docs/structure.md](TODO)
 
 ## Installation
 
@@ -80,7 +79,11 @@ pip install -r requirements/requirements.txt # TODO TODO TODO
 
 TODO
 
-## Search 
+## Search
+
+### Search using script
+
+Fill the data(video path & query) to the search.py code and run the scripts/search.py.
 
 ### Command Line Search
 
@@ -93,8 +96,10 @@ TODO
 
 ## Acknowledgement
 
-TODO
+Here we list a projects that were used in the Open-Eye-Sight implementation.
 
-- [CLIP](https://github.com/openai/CLIP): A powerful text-image embedding model.
+- [CLIP](https://github.com/openai/CLIP): A powerful text-image embedding model that uses contrastive learning approach.
+- [YOLOv8](https://github.com/ultralytics/ultralytics): A powerful computer vision model for object detection.
+- [DinoV2](https://github.com/facebookresearch/dinov2/tree/main): A powerful vision transformer model from Meta.
 
 

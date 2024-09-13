@@ -12,8 +12,8 @@ def __main__():
         model_path="models/dinov2_vitl14_pretrain.pth",
     ) 
     # Search by image
-    search_pipeline.add_video("assets/citycam.mp4")
-    search_pipeline.search_by_image("assets/white_truck.jpg")
+    search_pipeline.add_video("assets/search/citycam.mp4")
+    search_pipeline.search_by_image("assets/search/white_truck.jpg")
 
 __main__()
 

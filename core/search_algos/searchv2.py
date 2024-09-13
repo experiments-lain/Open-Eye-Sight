@@ -12,11 +12,13 @@ class EntityObject():
     A class with entity data.
 
     Atrributes:
+    - source_id: The id of the video that used as a source.
     - vis_embs (torch.Tensor): Tensor that stores the vision embeddings of entity.
     - entity_id (int): The assigned entity id.
     - timestamp (int): Timestamp that indicates the moment when entity was captured.
     """
     def __init__(self, vis_embedding, entity_id : int, timestamp : int):
+        self.source_id = 0
         self.vis_embedding = vis_embedding
         self.entity_id = entity_id
         self.timestamp = timestamp
@@ -51,7 +53,7 @@ class EntitiesBucket(ABC):
         
         Returns:
         - tupple: A tupple containing
-            - list: Vision embeddings of entities within the time range.
+            - list: Visiual embeddings of entities within the time range.
             - list: Indices of the corresponding entities in the self.entities list.
 
         """
@@ -94,14 +96,14 @@ class EntitiesBucket(ABC):
         Returns:
         - list: A list of tuples containing (score, timestamp, entity_id) for matching entities.
         """
-        score_mul = (self.score_mul if score_mul > 0 else 1)
+        score_mul = (self._score_mul if score_mul > 0 else 1)
         data_embeddings, data_idx = self._gather(min_time=min_time, max_time=max_time)
         data_size = len(data_idx)
         target_embedding = target_embedding.repeat(len(data_embeddings), 1)
         scores = self.cos_sim(torch.cat(data_embeddings, dim=0), target_embedding)
         results = []
         for idx in range(data_size):
-            if score_mul * scores[idx] > self.threshold:
+            if score_mul * scores[idx] > self._threshold:
                 results.append(
                     (score_mul * (scores[idx].numpy()), self.entities[data_idx[idx]].get_time(), self.entities[data_idx[idx]].get_entity_id())
                 )
@@ -157,13 +159,13 @@ class EntititesBucketDINO(EntitiesBucket):
     A subclass of EntitiesBucket that uses the DINOv2 model for entity encoding and search.
 
     Attributes:
-        threshold (float): Similarity threshold for entity matching.
-        score_mul (float): Scaling factor for similarity score.
+    - threshold (float): Similarity threshold for entity matching.
+    - score_mul (float): Scaling factor for similarity score.
     """
     def __init__(self,):
         super().__init__()
-        self.threshold = 0.3
-        self.score_mul = 1.0
+        self._threshold = 0.3
+        self._score_mul = 1.0
     @staticmethod
     def load_model(path='models/dinov2_vitl14_pretrain.pth'):
         """ Refer to the description in parent class. """
@@ -204,8 +206,8 @@ class EntititesBucketCLIP(EntitiesBucket):
     """
     def __init__(self,):
         super().__init__()
-        self.threshold = 0.65
-        self.score_mul = 3.125
+        self._threshold = 0.65
+        self._score_mul = 3.125
     @staticmethod
     def load_model(path='models/ViT-L-14.pt'):
         """ Refer to the description in parent class. """

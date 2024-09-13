@@ -13,21 +13,19 @@ class ObjectRetriever:
     This class provides functionality to retrieve and store entity images using YOLO model. 
 
     Attributes:
-        model : The YOLO model for object detection.
-        iou_thresh (float): Treshold of intersection over union value for YOLO model.
-        conf_thresh (float): Treshold of confidence score for YOLO model.
-        device (str): The device to use for computations ('cuda' or 'cpu').
-        num_entities (int): The number of entities that was retrieved at the moment.
-        entity_images (list): List of entity images in PIL Image format. 
+    - model : The YOLO model for object detection.
+    - iou_thresh (float): Treshold of intersection over union value for YOLO model.
+    - conf_thresh (float): Treshold of confidence score for YOLO model.
+    - device (str): The device to use for computations ('cuda' or 'cpu').
+    - num_entities (int): The number of entities that was retrieved at the moment.
+    - entity_images (list): List of entity images in PIL Image format. 
     """
-    # Put object retriever in another code part <_> Done
-    # implement saving objects for videos, implement
     def __init__(self, yolo_weights_path="models/yolov8x.pt"):
         """
         Initialize the object retriever.
 
         Parameters:
-            yolo_weights_path (str): The path to your YOLO model weights.
+        - yolo_weights_path (str): The path to your YOLO model weights.
         """
         self.model = YOLO(yolo_weights_path)
         self.iou_thresh = 0.7
@@ -40,7 +38,7 @@ class ObjectRetriever:
         Add entity to the object retriever storage.
 
         Parameteres:
-            entity (PIL Image [H, W, C]): The entity to be added. 
+        - entity (PIL Image [H, W, C]): The entity to be added. 
         """
         self.num_entities += 1
         self.entity_images.append(entity)
@@ -54,8 +52,7 @@ class ObjectRetriever:
 
         Parameteres:
         - source (Tensor [F, H, W, C]) : height, width, channels(RGB) (Image can be provided (shape : [C, H, W]))
-        - timestamps : timestamp for each frame 
-
+        - timestamps : timestamp for each frame
         """
         if len(source.shape) == 3:
             # image -> video
