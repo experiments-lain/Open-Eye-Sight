@@ -7,6 +7,8 @@ from torch import nn
 from ultralytics import YOLO
 from PIL import Image
 from core.video_processing.video_processor import VideoProccessor
+from core.database.database_manager import DataBaseManager
+
 class ObjectRetriever:
     """
     A class for entity/object retrieving from videos and maintaining the retrieved entitites effectively.
@@ -31,6 +33,7 @@ class ObjectRetriever:
         self.iou_thresh = 0.7
         self.conf_thresh = 0.5
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.db_manager = DataBaseManager()
         self.num_entities = 0
         self.entity_images = []
     def _add_entity(self, entity):
@@ -40,12 +43,14 @@ class ObjectRetriever:
         Parameteres:
         - entity (PIL Image [H, W, C]): The entity to be added. 
         """
-        self.num_entities += 1
-        self.entity_images.append(entity)
-        return self.num_entities - 1
-    def _get_entity(self, entity_id):
-        assert entity_id < self.num_entities, "The entity_id exceedes the number of entities." 
-        return self.entity_images[entity_id]
+        entity_dbid = self.db_manager.add_entity(entity_id=1337)
+        self.db_manager.upd_entity(entity_dbid, {"img" :  (np.array(entity)).tolist()})
+        return entity_dbid
+
+    def _get_entity(self, entity_dbid):
+        x = np.array(self.db_manager.get_entity(entity_dbid)['value']['img']).astype(np.uint8)
+        return Image.fromarray(x)
+
     def retrieve_objects(self, source, timestamps):
         """
         Retrieve objects from source video/image.

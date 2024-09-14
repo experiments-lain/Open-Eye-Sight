@@ -54,7 +54,7 @@ Other useful documents and links are listed below.
 
 - Technical Reports:
   - [report 1.0](docs/report_01.md): architecture, implementation details, etc.
-- Repo structure: [docs/structure.md](TODO)
+- Repo structure: [structure](docs/structure.md)
 
 ## Installation
 

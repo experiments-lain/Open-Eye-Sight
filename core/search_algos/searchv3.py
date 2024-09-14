@@ -3,30 +3,12 @@ import sys
 import os
 import torch
 from torch import nn
-sys.path.append(os.getcwd()) 
+sys.path.append(os.getcwd())
+from core.database.database_manager import DataBaseManager
 import tools.clip as clip
 import tools.dinov2.models as dino
-
-class EntityObject():
-    """
-    A class with entity data.
-
-    Atrributes:
-    - source_id: The id of the video that used as a source.
-    - vis_embs (torch.Tensor): Tensor that stores the vision embeddings of entity.
-    - entity_id (int): The assigned entity id.
-    - timestamp (int): Timestamp that indicates the moment when entity was captured.
-    """
-    def __init__(self, vis_embedding, entity_id : int, timestamp : int):
-        self.vis_embedding = vis_embedding
-        self.entity_id = entity_id
-        self.timestamp = timestamp
-    def get_entity_id(self,):
-        return self.entity_id
-    def get_time(self,):
-        return self.timestamp
-    def get_vis_embs(self,):
-        return self.vis_embedding        
+import numpy as np
+        
 
 class EntitiesBucket(ABC):
     """
@@ -38,13 +20,13 @@ class EntitiesBucket(ABC):
     - cos_sim (nn.CosineSimilarity): Cosine similarity function for semantic search.
     """
     def __init__(self, ):
-        self.entities = []  
+        self.bucket_id = None # "source_id" + "left_timestamp"  
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.cos_sim = nn.CosineSimilarity(dim=1, eps=1e-8)
 
-    def _gather(self, min_time, max_time):
+    def _gather(self, min_time, max_time, db_manager, bucket_id):
         """
-        Gather all vision embeddings of entities that appears in [min_time, max_time] range
+        Gather all visual embeddings of entities that appears in [min_time, max_time] range
 
         Parameteres:
         - min_time (int): The start of the search interval.  
@@ -56,14 +38,16 @@ class EntitiesBucket(ABC):
             - list: Indices of the corresponding entities in the self.entities list.
 
         """
+        entities = db_manager.get_bucket(bucket_id)
         vis_embs, idx = [], []
-        for entity_idx in range(len(self.entities)):
-            if min_time <= self.entities[entity_idx].get_time() and self.entities[entity_idx].get_time() <= max_time:
-                vis_embs.append(self.entities[entity_idx].get_vis_embs().unsqueeze(0))
-                idx.append(entity_idx)
+        for entity_dbid in entities:
+            entity_data = db_manager.get_entity(entity_dbid)
+            if min_time <= entity_data['value']['timestamp'] and entity_data['value']['timestamp'] <= max_time:
+                vis_embs.append(torch.from_numpy(np.array(entity_data['value']['vis_embs'])).unsqueeze(0))
+                idx.append(entity_data['_id'])
         return (vis_embs, idx)
     
-    def add_batch(self, entity_images, timestamps, entity_ids, model, preprocess):
+    def add_batch(self, bucket_id, entity_images, timestamps, entity_dbids, model, preprocess, db_manager):
         """
         Add batch of images to the bucket.
         
@@ -74,14 +58,13 @@ class EntitiesBucket(ABC):
         - model (nn.Module): Encoding model.
         - preprocess (Transofrm): Preprocessing transform for images.  
         """
-        batch_size = len(entity_images)
+        
         vis_embeddings = self.encode_image(entity_images, model, preprocess)
-        for idx in range(batch_size):
-            self.entities.append(
-                EntityObject(vis_embedding=vis_embeddings[idx], timestamp=timestamps[idx], entity_id=entity_ids[idx])
-            ) 
+        for vis_emb, timestamp, entity_dbid in zip(vis_embeddings, timestamps, entity_dbids):
+            db_manager.upd_entity(entity_dbid, {"vis_embs" : vis_emb.numpy().tolist(), "timestamp" : timestamp})
+            db_manager.add_entity_to_bucket(bucket_id, entity_dbid)
     
-    def search(self, target_embedding, min_time, max_time, score_mul=0):
+    def search(self, target_embedding, min_time, max_time, db_manager, bucket_id, score_mul=0):
         """
         Calculate and return a distance between all embeddings stored in the bucket and target embedding.
         [IMPROVE THAT PART LATER, USE K-ANN OR ANOTHER METHOD]
@@ -96,16 +79,17 @@ class EntitiesBucket(ABC):
         - list: A list of tuples containing (score, timestamp, entity_id) for matching entities.
         """
         score_mul = (self._score_mul if score_mul > 0 else 1)
-        data_embeddings, data_idx = self._gather(min_time=min_time, max_time=max_time)
+        data_embeddings, data_idx = self._gather(min_time=min_time, max_time=max_time, db_manager=db_manager, bucket_id=bucket_id)
         data_size = len(data_idx)
         target_embedding = target_embedding.repeat(len(data_embeddings), 1)
+        print(data_embeddings[0].shape)
+        print(target_embedding.shape)
         scores = self.cos_sim(torch.cat(data_embeddings, dim=0), target_embedding)
         results = []
         for idx in range(data_size):
             if score_mul * scores[idx] > self._threshold:
-                results.append(
-                    (score_mul * (scores[idx].numpy()), self.entities[data_idx[idx]].get_time(), self.entities[data_idx[idx]].get_entity_id())
-                )
+                timestamp = db_manager.get_entity(data_idx[idx])['value']['timestamp']
+                results.append((score_mul * (scores[idx].numpy()), timestamp, data_idx[idx]))
         return results
 
     @staticmethod
@@ -248,7 +232,8 @@ class BucketManagerV2():
     """
     def __init__(self, search_class, path, block_size=60):
         self.search_class = search_class
-        self.buckets = {} # 
+        self.bucket = search_class()
+        self.db_manager = DataBaseManager()
         self.model, self.preprocess = self.search_class.load_model(path)
         self.block = block_size
 
@@ -257,7 +242,7 @@ class BucketManagerV2():
     def _get_bucket_range(self, bucket_id):
         return (bucket_id, bucket_id + self.block)
     
-    def add_batch(self, obj_batch, time_stamps, entity_ids):
+    def add_batch(self, obj_batch, time_stamps, entity_dbids):
         """
         Releases objects from buffer
 
@@ -266,10 +251,12 @@ class BucketManagerV2():
         - time_stamps (int): Timestamp. 
         - entity_ids (int): Timestamp.
         """
-        for obj, time_stamp, entity_id in zip(obj_batch, time_stamps, entity_ids):
-            if self._get_bucket_idx(time_stamp) not in self.buckets:
-                self.buckets.update({self._get_bucket_idx(time_stamp) : self.search_class()})
-            self.buckets[self._get_bucket_idx(time_stamp)].add_batch([obj], [time_stamp], [entity_id], self.model, self.preprocess)
+        for obj, time_stamp, entity_dbid in zip(obj_batch, time_stamps, entity_dbids):
+            self.bucket.add_batch(
+                self._get_bucket_idx(time_stamp), 
+                [obj], [time_stamp], [entity_dbid], 
+                self.model, self.preprocess, self.db_manager
+            )
     def text_search(self, caption, min_time = 0, max_time = 2000000000):
         """
         Perform search on entities by text description.
@@ -284,11 +271,13 @@ class BucketManagerV2():
         """
         results = []
         target_embeddings = self.search_class.encode_text(caption, self.model, self.preprocess)
-        for bucket_id, bucket in self.buckets.items():
+        buckets = self.db_manager.get_buckets()
+
+        for bucket_id in buckets:
             bucket_timerange = self._get_bucket_range(bucket_id)
             if max(bucket_timerange[0], min_time) >  min(bucket_timerange[1], max_time):
                 continue
-            results.extend(bucket.search(target_embeddings, min_time, max_time, 1))
+            results.extend(self.bucket.search(target_embeddings, min_time, max_time, self.db_manager, bucket_id, 0))
         results = sorted(results, reverse=True)
         return results[0:5] # return top 5 results
     def image_search(self, image, min_time = 0, max_time = 2000000000):
@@ -305,10 +294,12 @@ class BucketManagerV2():
         """
         results = []
         target_embeddings = self.search_class.encode_image(image, self.model, self.preprocess)
-        for bucket_id, bucket in self.buckets.items():
+        buckets = self.db_manager.get_buckets()
+
+        for bucket_id in buckets:
             bucket_timerange = self._get_bucket_range(bucket_id)
             if max(bucket_timerange[0], min_time) >  min(bucket_timerange[1], max_time):
                 continue
-            results.extend(bucket.search(target_embeddings, min_time, max_time, 0))
+            results.extend(self.bucket.search(target_embeddings, min_time, max_time, self.db_manager, bucket_id, 0))
         results = sorted(results, reverse=True)
         return results[0:5] # return top 5 results
