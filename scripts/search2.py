@@ -2,12 +2,12 @@ import os
 import sys
 sys.path.append(os.getcwd()) 
 from core.pipelines.search_pipelinev2 import SearchPipeline
-from core.search_algos.searchv3 import EntititesBucketCLIP, EntititesBucketDINO
+from core.search_algos.searchv3 import BucketOperationsCLIP, BucketOperationsDINO
 import time
 
 def __main__():
     search_pipeline = SearchPipeline(
-        search_cls=EntititesBucketDINO, 
+        search_cls=BucketOperationsDINO, 
         sampling_rate=24, 
         yolo_path="models/yolov8x.pt",
         model_path="models/dinov2_vitl14_pretrain.pth",

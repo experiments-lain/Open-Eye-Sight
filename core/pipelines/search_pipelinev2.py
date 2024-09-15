@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.append(os.getcwd())
 from core.video_processing import ObjectRetriever, VideoProccessor
-from core.search_algos.searchv3 import BucketManagerV2, EntititesBucketDINO
+from core.search_algos.searchv3 import BucketManagerV2, BucketOperationsDINO
 from PIL import Image
 import time
 

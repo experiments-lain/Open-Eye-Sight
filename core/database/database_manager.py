@@ -25,6 +25,7 @@ class DataBaseManager:
         })
         return insert_entity.inserted_id
     def upd_entity(self, entity_dbid, new_vals):
+        """Update entity values in the database"""
         new_vals = {'value.' + key : val for key, val in new_vals.items()}
         #print(new_vals)
         self.stored_entities.update_one(
@@ -32,8 +33,10 @@ class DataBaseManager:
             {'$set' : new_vals}
         )
     def get_entity_by_id(self, entity_id):
+        """Get entity by id."""
         return self.stored_entities.find_one({"name" : entity_id})
     def get_entity(self, entity_dbid):
+        """Get entity by Database id."""
         return self.stored_entities.find_one({"_id" : ObjectId(entity_dbid)})
     def add_entity_to_bucket(self, bucket_id, entity_dbid):
         """Add entity to the bucket list"""
@@ -43,8 +46,10 @@ class DataBaseManager:
             upsert=True
         )
     def get_bucket(self, bucket_id):
+        """Get list of entities in bucket"""
         return self.bucket_manager.find_one({'name' : bucket_id})['entities']
     def get_buckets(self):
+        """Get all buckets id"""
         all_lists = self.bucket_manager.distinct('name')
         return all_lists
     
