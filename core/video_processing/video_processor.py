@@ -14,8 +14,7 @@ class VideoProccessor:
     
     STANDART : USING RGB VIDEOS & IMAGES WITH SHAPE [*, C, H, W] (AND AS TENSOR | NUMPY NDARRAY) 
     """
-    def __init__(self, cap_freq = 4):
-        self.cap_freq = cap_freq
+    def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.transform = torchvision.transforms.Resize(
             (640, 640), 
@@ -28,12 +27,13 @@ class VideoProccessor:
         """Read video from the given path, sample it and convert it to RGB Tensor[F, H, W, C]."""
         try:
             capturer = cv2.VideoCapture(video_path)
+            cap_freq = capturer.get(cv2.CAP_PROP_FPS)
             video, step = [], 0
             while(True):
                 ret, frame = capturer.read()
                 if not ret:
                     break
-                if step % self.cap_freq == 0:
+                if step % cap_freq == 0:
                     frame = torch.tensor(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
                     frame = self.transform(torch.tensor(frame).permute((2, 0, 1))) # permuting for transform HWC->CHW
                     video.append(frame.unsqueeze(0))

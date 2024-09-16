@@ -13,13 +13,12 @@ class SearchPipeline():
     def __init__(
         self, 
         search_cls, 
-        sampling_rate,
         yolo_path,
         model_path,
         time_block_size=60,
         debug_mode=False,
     ):
-        self.video_processor = VideoProccessor(sampling_rate)
+        self.video_processor = VideoProccessor()
         self.object_retriever = ObjectRetriever(yolo_path)
         self.bucket_manager = BucketManagerV2(search_cls, model_path, time_block_size)
     def add_video(self, video_path):

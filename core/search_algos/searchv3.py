@@ -86,6 +86,8 @@ class BucketOperations(ABC):
         score_mul = (search_cls._score_mul if score_mul > 0 else 1)
         data_embeddings, data_idx = __class__._gather(min_time=min_time, max_time=max_time, db_manager=db_manager, bucket_id=bucket_id)
         data_size = len(data_idx)
+        if data_size == 0:
+            return []
         target_embedding = target_embedding.repeat(len(data_embeddings), 1)
         scores = __class__.cos_sim(torch.cat(data_embeddings, dim=0), target_embedding)
         results = []
