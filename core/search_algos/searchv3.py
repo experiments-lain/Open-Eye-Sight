@@ -303,7 +303,7 @@ class BucketManagerV2():
         for bucket_id in buckets:
             bucket_timerange = self._get_bucket_range(bucket_id)
             if max(bucket_timerange[0], min_time) >  min(bucket_timerange[1], max_time):
-                continue
+                continue    
             results.extend(self.search_class.search(target_embeddings, min_time, max_time, self.db_manager, bucket_id, self.search_class, 0))
         results = sorted(results, reverse=True)
         return results[0:5] # return top 5 results

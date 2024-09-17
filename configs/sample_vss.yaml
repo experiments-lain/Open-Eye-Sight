@@ -1,8 +1,5 @@
-yolo_ckpt_path: "models/yolo8x.pt"
-clip_ckpt_path: "models/ViT-L-14.pt"
-
-image_size: [ 640, 640 ]
-sampling_rate: 24
-saving_directory: results/
-caption: "Man looking on the cat"
+yolo_ckpt_path: "models/yolov8x.pt"
+extractor_ckpt_path: "models/dinov2_vitl14_pretrain.pth"
+image_or_text: "image"
+image_path: "assets/search/search_long.jpg"
 debug: False

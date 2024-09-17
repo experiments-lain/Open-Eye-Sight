@@ -85,9 +85,13 @@ TODO
 
 Fill the data(video path & query) to the search.py code and run the scripts/search.py.
 
-### Command Line Search
+### Search using config
 
-TODO
+TODO : CONFIG DESCRIPTION, ADD PARSING WITHOUT CONFIG ETC.
+
+```bash
+python scripts/search3.py --config configs/sample_vss.yaml
+```
 
 
 ## Evaluation
