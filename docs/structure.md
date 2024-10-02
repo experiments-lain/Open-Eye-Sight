@@ -1,7 +1,7 @@
 # Repo Structure
 
 ```plaintext
-Open-Sora
+Open-Eye-Sight
 ├── README.md
 ├── assets
 │   ├── reports                    -> Images for the reports
